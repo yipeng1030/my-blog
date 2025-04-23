@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>My Blogs</title>
+    <link>http://localhost:1313/my-blog/</link>
+    <description>Recent content on My Blogs</description>
+    <generator>Hugo -- 0.146.7</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 23 Apr 2025 11:22:12 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/my-blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My First Post</title>
+      <link>http://localhost:1313/my-blog/posts/my-first-post/</link>
+      <pubDate>Wed, 23 Apr 2025 11:22:12 +0800</pubDate>
+      <guid>http://localhost:1313/my-blog/posts/my-first-post/</guid>
+      <description>&lt;h2 id=&#34;welcome&#34;&gt;Welcome!!&lt;/h2&gt;
+&lt;p&gt;This is my very first post using Hugo and Github Pages.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

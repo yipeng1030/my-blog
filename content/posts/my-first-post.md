@@ -1,7 +1,6 @@
 +++
 date = '2025-04-23T11:22:12+08:00'
 draft = false
-tags: ["tech","blogging"]
 title = 'My First Post'
 +++
 
