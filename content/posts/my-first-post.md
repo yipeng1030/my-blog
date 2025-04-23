@@ -4,7 +4,7 @@ draft = false
 title = 'My First Post'
 +++
 
-## Welcome!!
+# Hello, I'm Yipeng
 
-This is my very first post using Hugo and Github Pages.
+This is my very first commit, thanks for coming here.
 
