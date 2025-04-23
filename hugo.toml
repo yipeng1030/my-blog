@@ -1,0 +1,4 @@
+baseURL = 'https://yipeng1030.github.io/my-blog/'
+languageCode = 'zh-cn'
+title = 'My Blogs'
+theme = ''
