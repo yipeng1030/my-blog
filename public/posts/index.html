@@ -5,9 +5,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Posts | My Blogs</title>
+<title>Posts | Yipeng M</title>
 <meta name="keywords" content="">
-<meta name="description" content="Posts - My Blogs">
+<meta name="description" content="Posts - Yipeng M">
 <meta name="author" content="">
 <link rel="canonical" href="http://localhost:1313/my-blog/posts/">
 <link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
@@ -74,7 +74,7 @@
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/my-blog/" accesskey="h" title="My Blogs (Alt + H)">My Blogs</a>
+            <a href="http://localhost:1313/my-blog/" accesskey="h" title="Yipeng M (Alt + H)">Yipeng M</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -111,20 +111,25 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">My First Post
+    <h2 class="entry-hint-parent">Go并发编程实践：生产者-消费者模型的三种同步方案
     </h2>
   </header>
   <div class="entry-content">
-    <p>Welcome!! This is my very first post using Hugo and Github Pages.
-</p>
+    <p>本文通过实现生产者-消费者模型，探讨Go语言中不同的并发控制方法。我们逐步分析三种方案的实现细节、技术选型和使用场景。
+问题定义 实现两个goroutine：
+生产者：顺序发送0-4的整型数据 消费者：接收并输出数据 需要正确处理channel关闭和goroutine同步 方案一：双通道同步法 func main() { quit1 := make(chan int) quit2 := make(chan int) pipe := make(chan int) go func() { // 生产者 for i := 0; i &lt; 5; i&#43;&#43; { pipe &lt;- i } quit1 &lt;- 0 // 发送完成信号 }() go func() { // 消费者 for { select { case c := &lt;-pipe: println(c) return case &lt;-quit1: quit2 &lt;- 0 // 转发完成信号 } } }() &lt;-quit2 // 等待最终确认 } 核心技术：
+专用退出通道（quit1/quit2） 多级信号传递机制 优势：
+明确展示同步过程 无需第三方同步原语 缺陷：
+多通道增加维护成本 存在goroutine泄漏风险 方案二：通道关闭&#43;WaitGroup法 func main() { ch := make(chan int) var wg sync.WaitGroup wg.Add(2) go func() { // 生产者 defer wg.Done() for i := 0; i &lt; 5; i&#43;&#43; { ch &lt;- i } close(ch) // 关键关闭操作 }() go func() { // 消费者 defer wg.Done() for c := range ch { // 自动检测关闭 println(c) } }() wg.Wait() } 核心技术：
+...</p>
   </div>
   <footer class="entry-footer"><span title='2025-04-23 11:22:12 +0800 CST'>April 23, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to My First Post" href="http://localhost:1313/my-blog/posts/my-first-post/"></a>
+  <a class="entry-link" aria-label="post link to Go并发编程实践：生产者-消费者模型的三种同步方案" href="http://localhost:1313/my-blog/posts/go%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5-%E4%B8%89%E7%A7%8D%E4%BC%98%E9%9B%85%E9%80%80%E5%87%BA/"></a>
 </article>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/my-blog/">My Blogs</a></span> · 
+        <span>&copy; 2025 <a href="http://localhost:1313/my-blog/">Yipeng M</a></span> · 
 
     <span>
         Powered by

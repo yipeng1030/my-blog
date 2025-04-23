@@ -1,11 +1,4 @@
 baseURL = 'https://yipeng1030.github.io/my-blog/'
 languageCode = 'zh-cn'
-title = 'My Blogs'
+title = 'Yipeng M'
 theme = 'hugo-PaperMod'
-
-params:
-  homeInfoParams:
-    Title: Hi there wave
-    buttons:
-      - name: Github
-        url: "https://github.com/yipeng1030"
