@@ -142,9 +142,9 @@ func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate)
     2. `RuntimeClass` 允许集群管理员定义不同的容器运行时配置（例如使用 Kata Containers 或 gVisor 等沙箱运行时），并让用户在 Pod Spec 中通过 `runtimeClassName` 字段来选择使用哪种运行时。
     3. 该管理器会监听 `RuntimeClass` 对象的变化，并动态加载相应的运行时配置。
 
-11. **Pod 生命周期事件生成器 (PLEG -** **`PodLifecycleEventGenerator`**)：
+11. **Pod 生命周期事件生成器** ( **PLEG -`PodLifecycleEventGenerator`**)：
 
-    <img src="20250506-2.jpeg" alt="20250506-1" style="zoom: 25%;" />
+    ![20250506-2](20250506-2.jpeg)
 
     1. PLEG 的核心职责是监控节点上容器运行时的状态变化（如容器的启动、停止、崩溃、删除等），并将这些变化转换为抽象的 Pod 生命周期事件。这些事件随后会驱动 Kubelet 的主同步循环 (`syncLoop`) 去更新 Pod 的内部状态并执行相应的操作。
 
@@ -233,7 +233,7 @@ func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate)
 
        - **核心迭代逻辑 **(`kl.syncLoopIteration`): `syncLoop` 将实际的事件处理和同步分派逻辑委托给 `kl.syncLoopIteration` 函数。 
 
-         <img src="20250506-3.jpeg" alt="20250506-1"  />
+         ![20250506-3](20250506-3.jpeg)
 
          - `syncLoopIteration` 是真正执行每一次循环迭代工作的地方。它通过一个 `select` 语句并发地监听多个事件通道： 
            - **`configCh`** **(Pod 配置更新)**: 处理来自 API Server、静态文件等的 Pod 期望状态的变更（增、删、改、协调）。根据 `PodUpdate` 中的操作类型 (`u.Op`)，调用 `handler` (即 Kubelet 自身) 的不同方法 (如 `HandlePodAdditions`, `HandlePodUpdates` 等)。
