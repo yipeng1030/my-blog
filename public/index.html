@@ -11,7 +11,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 <link rel="canonical" href="http://localhost:1313/my-blog/">
-<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.ce220725cb6f0bf77830c47ba31ebba6383d507f2fc2e29f6f156a6b9210628a.css" integrity="sha256-ziIHJctvC/d4MMR7ox67pjg9UH8vwuKfbxVqa5IQYoo=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/my-blog/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/my-blog/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/my-blog/favicon-32x32.png">
@@ -106,6 +106,20 @@
 <main class="main"> 
 
 <article class="first-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">K8s源代码分析：Kubelet(1)-主循环
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Kubelet 主工作流程源码深度剖析 Kubelet 是 Kubernetes 集群中每个节点上运行的核心组件，它负责管理 Pod 的生命周期、与容器运行时交互、上报节点和 Pod 状态等。本文将深入分析 Kubelet 的主工作流程，从启动函数 Run 开始，逐层解析其核心组件和循环机制。
+一、Kubelet 的启动入口：Kubelet.Run() 函数 graph TD subgraph Node[&#34;节点 (Node)&#34;] KubeletMain[&#34;Kubelet 主进程 (Kubelet.Run)&#34;] CRI[&#34;容器运行时 (CRI Interface)&#34;] CNI[&#34;网络插件 (CNI)&#34;] OS[&#34;操作系统 / cgroups&#34;] subgraph KubeletInternal[&#34;Kubelet 内部组件&#34;] PodManager[&#34;Pod 管理器&#34;] PLEG[&#34;PLEG (Pod Lifecycle Event Generator)&#34;] VolumeManager[&#34;卷管理器&#34;] StatusManager[&#34;状态管理器 (Pod &amp; Node)&#34;] PodWorkers[&#34;Pod Workers&#34;] APIServerClient[&#34;API Server 客户端&#34;] LogServer[&#34;日志服务&#34;] CloudSync[&#34;(可选) 云同步管理器&#34;] end KubeletMain --&gt; APIServerClient KubeletMain --- PodManager KubeletMain --- PLEG KubeletMain --- VolumeManager KubeletMain --- StatusManager KubeletMain --- PodWorkers KubeletMain --- LogServer KubeletMain --- CloudSync APIServerClient &lt;--&gt; ExternalAPIServer[&#34;Kubernetes API Server&#34;] PLEG &lt;--&gt; CRI PodWorkers &lt;--&gt; CRI PodWorkers &lt;--&gt; CNI PodWorkers &lt;--&gt; OS VolumeManager &lt;--&gt; OS end ExternalAPIServer -- 配置/指令 --&gt; KubeletMain KubeletMain -- 状态/事件 --&gt; ExternalAPIServer Kubelet.Run() 函数是整个 Kubelet 服务的起点，负责完成一系列初始化工作并启动各个后台服务和主工作循环。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-06 11:22:12 +0800 CST'>May 6, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to K8s源代码分析：Kubelet(1)-主循环" href="http://localhost:1313/my-blog/posts/20250506/"></a>
+</article>
+
+<article class="post-entry"> 
   <header class="entry-header">
     <h2 class="entry-hint-parent">Go并发编程实践：生产者-消费者模型的三种同步方案
     </h2>

@@ -5,12 +5,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Posts | Yipeng M</title>
+<title>Mermaid 测试 | Yipeng M</title>
 <meta name="keywords" content="">
-<meta name="description" content="Posts - Yipeng M">
+<meta name="description" content="这是一个简单的 Mermaid 测试：
+graph TD   
+	X --&gt; Y
+">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/my-blog/posts/">
-<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link rel="canonical" href="http://localhost:1313/my-blog/posts/test/">
+<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.ce220725cb6f0bf77830c47ba31ebba6383d507f2fc2e29f6f156a6b9210628a.css" integrity="sha256-ziIHJctvC/d4MMR7ox67pjg9UH8vwuKfbxVqa5IQYoo=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/my-blog/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/my-blog/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/my-blog/favicon-32x32.png">
@@ -18,8 +21,7 @@
 <link rel="mask-icon" href="http://localhost:1313/my-blog/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/my-blog/posts/index.xml">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/my-blog/posts/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/my-blog/posts/test/">
 <noscript>
     <style>
         #theme-toggle,
@@ -59,7 +61,7 @@
 </noscript>
 </head>
 
-<body class="list" id="top">
+<body class="" id="top">
 <script>
     if (localStorage.getItem("pref-theme") === "dark") {
         document.body.classList.add('dark');
@@ -102,49 +104,29 @@
         </ul>
     </nav>
 </header>
-<main class="main"> 
-<header class="page-header">
-  <h1>
-    Posts
-  </h1>
-</header>
+<main class="main">
 
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">K8s源代码分析：Kubelet(1)-主循环
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Kubelet 主工作流程源码深度剖析 Kubelet 是 Kubernetes 集群中每个节点上运行的核心组件，它负责管理 Pod 的生命周期、与容器运行时交互、上报节点和 Pod 状态等。本文将深入分析 Kubelet 的主工作流程，从启动函数 Run 开始，逐层解析其核心组件和循环机制。
-一、Kubelet 的启动入口：Kubelet.Run() 函数 Kubelet.Run() 函数是整个 Kubelet 服务的起点，负责完成一系列初始化工作并启动各个后台服务和主工作循环。
-func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) 它的主要启动步骤包括：
-日志服务初始化：
-设置 Kubelet 的 HTTP 日志服务，允许通过 API 访问节点上的日志文件。如果特定功能门控开启，还会支持更高级的日志查询功能。 API Server 客户端校验：
-通过检查 if kl.kubeClient == nil 判断是否配置了与 Kubernetes API Server 通信的客户端。如果没有配置，Kubelet 将无法向集群控制平面上报节点状态和 Pod 状态。 启动云资源同步管理器 (如果配置)：
-如果 Kubelet 配置了与特定云提供商集成的逻辑 (kl.cloudResourceSyncManager != nil)，则会启动一个后台 goroutine (协程) 来运行云资源同步管理器。 go kl.cloudResourceSyncManager.Run(wait.NeverStop) 该管理器负责同步节点与云平台相关的资源，如网络路由、负载均衡器等。 核心模块初始化：
-调用 kl.initializeModules() 初始化一系列不直接依赖容器运行时的内部模块。这些模块可能包括： 指标采集器 (Metrics Scraper) Kubelet 目录结构管理器 (Directory Manager) 证书管理器 (Certificate Manager) OOM 监视器 (OOM Watcher) 资源使用情况分析器 (Resource Analyzer) 这些模块的提前启动有助于 Kubelet 尽早准备好基础功能。 设计关键：任何一个核心模块初始化失败，都会导致 Kubelet 进程以错误码 1 退出 (os.Exit(1))，这表明了这些模块对于 Kubelet 正常运作的基础性和重要性。 Cgroup 版本检查：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-05-06 11:22:12 +0800 CST'>May 6, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to K8s源代码分析：Kubelet(1)-主循环" href="http://localhost:1313/my-blog/posts/20250506/"></a>
-</article>
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Mermaid 测试
+    </h1>
+    <div class="post-meta"><span title='2025-05-06 00:00:00 +0000 UTC'>May 6, 2025</span>
 
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Go并发编程实践：生产者-消费者模型的三种同步方案
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>本文通过实现生产者-消费者模型，探讨Go语言中不同的并发控制方法。我们逐步分析三种方案的实现细节、技术选型和使用场景。
-问题定义 实现两个goroutine：
-生产者：顺序发送0-4的整型数据 消费者：接收并输出数据 需要正确处理channel关闭和goroutine同步 方案一：双通道同步法 func main() { quit1 := make(chan int) quit2 := make(chan int) pipe := make(chan int) go func() { // 生产者 for i := 0; i &lt; 5; i&#43;&#43; { pipe &lt;- i } quit1 &lt;- 0 // 发送完成信号 }() go func() { // 消费者 for { select { case c := &lt;-pipe: println(c) return case &lt;-quit1: quit2 &lt;- 0 // 转发完成信号 } } }() &lt;-quit2 // 等待最终确认 } 核心技术：
-专用退出通道（quit1/quit2） 多级信号传递机制 优势：
-明确展示同步过程 无需第三方同步原语 缺陷：
-多通道增加维护成本 存在goroutine泄漏风险 方案二：通道关闭&#43;WaitGroup法 func main() { ch := make(chan int) var wg sync.WaitGroup wg.Add(2) go func() { // 生产者 defer wg.Done() for i := 0; i &lt; 5; i&#43;&#43; { ch &lt;- i } close(ch) // 关键关闭操作 }() go func() { // 消费者 defer wg.Done() for c := range ch { // 自动检测关闭 println(c) } }() wg.Wait() } 核心技术：
-...</p>
+</div>
+  </header> 
+  <div class="post-content"><p>这是一个简单的 Mermaid 测试：</p>
+<pre tabindex="0"><code class="language-mermaid" data-lang="mermaid">graph TD   
+	X --&gt; Y
+</code></pre>
+
   </div>
-  <footer class="entry-footer"><span title='2025-04-23 11:22:12 +0800 CST'>April 23, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Go并发编程实践：生产者-消费者模型的三种同步方案" href="http://localhost:1313/my-blog/posts/go%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5-%E4%B8%89%E7%A7%8D%E4%BC%98%E9%9B%85%E9%80%80%E5%87%BA/"></a>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
 </article>
     </main>
     

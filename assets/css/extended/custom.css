@@ -1,0 +1,22 @@
+/* 尝试调整 Mermaid 图表整体的字体大小 */
+.mermaid svg {
+    font-size: 16px; /* 调整为您希望的默认字体大小 */
+}
+
+/* 如果上面的不够精确，可以更具体地针对节点内的文本 */
+.mermaid .label text, /* 流程图等标签 */
+.mermaid .actor,    /* 序列图角色 */
+.mermaid .messageText, /* 序列图消息文本 */
+.mermaid .noteText,  /* 注释文本 */
+.mermaid g.node text, /* 通用节点文本 */
+.mermaid .loopText text /* 循环块中的文本 */
+{
+    font-size: 16px !important; /* 调整为您希望的字体大小，!important 可能需要用来覆盖默认样式 */
+}
+
+/* 针对您图中特定类型的节点文本，可以进一步细化 */
+.mermaid .flowchart-label text, /* 流程图节点内的文本 */
+.mermaid .state-text text /* 状态图节点内的文本 */
+{
+    font-size: 16px !important; /* 调整为您希望的字体大小 */
+}

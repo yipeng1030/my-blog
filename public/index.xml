@@ -6,8 +6,55 @@
     <description>Recent content on Yipeng M</description>
     <generator>Hugo -- 0.146.7</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 23 Apr 2025 11:22:12 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 06 May 2025 11:22:12 +0800</lastBuildDate>
     <atom:link href="http://localhost:1313/my-blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>K8s源代码分析：Kubelet(1)-主循环</title>
+      <link>http://localhost:1313/my-blog/posts/20250506/</link>
+      <pubDate>Tue, 06 May 2025 11:22:12 +0800</pubDate>
+      <guid>http://localhost:1313/my-blog/posts/20250506/</guid>
+      <description>&lt;h2 id=&#34;kubelet-主工作流程源码深度剖析&#34;&gt;Kubelet 主工作流程源码深度剖析&lt;/h2&gt;
+&lt;p&gt;Kubelet 是 Kubernetes 集群中每个节点上运行的核心组件，它负责管理 Pod 的生命周期、与容器运行时交互、上报节点和 Pod 状态等。本文将深入分析 Kubelet 的主工作流程，从启动函数 &lt;code&gt;Run&lt;/code&gt; 开始，逐层解析其核心组件和循环机制。&lt;/p&gt;
+&lt;h3 id=&#34;一kubelet-的启动入口kubeletrun-函数&#34;&gt;一、Kubelet 的启动入口：&lt;code&gt;Kubelet.Run()&lt;/code&gt; 函数&lt;/h3&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-mermaid&#34; data-lang=&#34;mermaid&#34;&gt;graph TD
+    subgraph Node[&amp;#34;节点 (Node)&amp;#34;]
+        KubeletMain[&amp;#34;Kubelet 主进程 (Kubelet.Run)&amp;#34;]
+        CRI[&amp;#34;容器运行时 (CRI Interface)&amp;#34;]
+        CNI[&amp;#34;网络插件 (CNI)&amp;#34;]
+        OS[&amp;#34;操作系统 / cgroups&amp;#34;]
+
+        subgraph KubeletInternal[&amp;#34;Kubelet 内部组件&amp;#34;]
+            PodManager[&amp;#34;Pod 管理器&amp;#34;]
+            PLEG[&amp;#34;PLEG (Pod Lifecycle Event Generator)&amp;#34;]
+            VolumeManager[&amp;#34;卷管理器&amp;#34;]
+            StatusManager[&amp;#34;状态管理器 (Pod &amp;amp; Node)&amp;#34;]
+            PodWorkers[&amp;#34;Pod Workers&amp;#34;]
+            APIServerClient[&amp;#34;API Server 客户端&amp;#34;]
+            LogServer[&amp;#34;日志服务&amp;#34;]
+            CloudSync[&amp;#34;(可选) 云同步管理器&amp;#34;]
+        end
+
+        KubeletMain --&amp;gt; APIServerClient
+        KubeletMain --- PodManager
+        KubeletMain --- PLEG
+        KubeletMain --- VolumeManager
+        KubeletMain --- StatusManager
+        KubeletMain --- PodWorkers
+        KubeletMain --- LogServer
+        KubeletMain --- CloudSync
+
+        APIServerClient &amp;lt;--&amp;gt; ExternalAPIServer[&amp;#34;Kubernetes API Server&amp;#34;]
+        PLEG &amp;lt;--&amp;gt; CRI
+        PodWorkers &amp;lt;--&amp;gt; CRI
+        PodWorkers &amp;lt;--&amp;gt; CNI
+        PodWorkers &amp;lt;--&amp;gt; OS
+        VolumeManager &amp;lt;--&amp;gt; OS
+    end
+
+    ExternalAPIServer -- 配置/指令 --&amp;gt; KubeletMain
+    KubeletMain -- 状态/事件 --&amp;gt; ExternalAPIServer
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;code&gt;Kubelet.Run()&lt;/code&gt; 函数是整个 Kubelet 服务的起点，负责完成一系列初始化工作并启动各个后台服务和主工作循环。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Go并发编程实践：生产者-消费者模型的三种同步方案</title>
       <link>http://localhost:1313/my-blog/posts/go%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5-%E4%B8%89%E7%A7%8D%E4%BC%98%E9%9B%85%E9%80%80%E5%87%BA/</link>
