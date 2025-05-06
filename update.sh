@@ -7,7 +7,10 @@ DATE=$(date +%Y-%-m-%-d)
 read -p "请输入 commit 标题: " TITLE
 
 # 拼接 commit message
-MESSAGE="$DATE-\"$TITLE\""
+MESSAGE="$DATE:\"$TITLE\""
+
+# shellcheck disable=SC2164
+cd /Users/mengyipeng/Documents/blog/my-blog
 
 # 执行 git 操作
 git add .
