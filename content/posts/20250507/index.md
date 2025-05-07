@@ -6,8 +6,6 @@ title = 'Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心'
 
 +++
 
-# Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心
-
 Kubernetes 的 kube-scheduler 是集群的中枢决策者，负责为每一个新创建的、未指定节点的 Pod 选择最合适的运行节点。这一决策过程对集群的效率、应用性能和整体可靠性至关重要 1。本文将深入 kube-scheduler 的内部机制，通过分析其 Go 语言源代码，揭示其从启动、核心调度逻辑到高度可扩展的调度框架的演进与实现。Kubernetes 的调度器经历了从相对单一的设计到高度可扩展的调度框架的演变，这是理解其当前强大能力的关键 3。
 
 调度器的设计直接影响着集群上运行的应用程序的可用性和资源利用率。如果 Pod 被放置在不合适的节点上，可能会导致某些节点资源紧张而另一些节点资源闲置，或者违反 Pod 间的亲和性与反亲和性规则，进而影响应用的通信效率或容错能力。因此，深入理解调度器的工作原理，有助于更好地配置和排查问题，最终提升集群的整体表现。早期版本的调度器逻辑相对固定，难以满足日益增长的定制化需求 4。虽然之后引入的 Extender 机制提供了一定的扩展能力，但在性能和灵活性上仍有局限 4。调度框架的出现，允许开发者通过插件将自定义逻辑直接注入调度流程，这不仅促进了相关生态系统的繁荣，也使得核心调度器能够保持精简和易维护，同时满足多样化的调度需求，例如针对机器学习、批处理作业或需要特定硬件的工作负载 5。
@@ -47,8 +45,8 @@ kube-scheduler 的核心任务是为 Pod 选择最佳节点。其调度流程经
 
 在调度框架引入之前，kube-scheduler 主要依赖一个两阶段的过程来筛选和评估节点 1：
 
-1. ***\**\*\*\*预\*\*选阶段\*\* \*\*\*\*(Pr\*\*edicates\*\* / \*\*\*\*Fil\*\*tering)\*\**\***：此阶段的目标是过滤掉不满足 Pod 基本运行要求的节点。调度器会应用一系列预选策略（Predicates），例如检查节点是否有足够的资源（如 CPU、内存，对应 `PodFitsResources` 策略）、节点端口是否冲突（`PodFitsHostPorts`）、节点是否有不可容忍的污点 (Taints) 等 1。在早期的代码实现中，这一逻辑主要由 `k8s.io/kubernetes/plugin/pkg/scheduler/core/generic_scheduler.go` 文件中的 `findNodesThatFit()` 函数负责 1。
-2. ***\**\*\*\*优\*\*选阶段\*\* \*\*\*\*(Pr\*\*iorities\*\* / \*\*\*\*Sc\*\*oring)\*\**\***：通过预选阶段的节点被认为是“可行”的。接下来，优选阶段会对这些可行节点进行打分，以找出“最优”的节点。调度器会应用一系列优选函数（Priority functions），每个函数都会为节点打一个分数（通常在 0-10 或 0-100 的范围内）。最终，每个节点的总分是所有优选函数得分的加权和 1。得分最高的节点将被选中。如果多个节点的得分相同，通常会从中随机选择一个 1。早期版本中，此逻辑主要由 `PrioritizeNodes()` 函数实现 1。
+1. **预选阶段（Predicates/ Filtering)**：此阶段的目标是过滤掉不满足 Pod 基本运行要求的节点。调度器会应用一系列预选策略（Predicates），例如检查节点是否有足够的资源（如 CPU、内存，对应 `PodFitsResources` 策略）、节点端口是否冲突（`PodFitsHostPorts`）、节点是否有不可容忍的污点 (Taints) 等 1。在早期的代码实现中，这一逻辑主要由 `k8s.io/kubernetes/plugin/pkg/scheduler/core/generic_scheduler.go` 文件中的 `findNodesThatFit()` 函数负责 1。
+2. **优选阶段(Priorities/Scoring)**：通过预选阶段的节点被认为是“可行”的。接下来，优选阶段会对这些可行节点进行打分，以找出“最优”的节点。调度器会应用一系列优选函数（Priority functions），每个函数都会为节点打一个分数（通常在 0-10 或 0-100 的范围内）。最终，每个节点的总分是所有优选函数得分的加权和 1。得分最高的节点将被选中。如果多个节点的得分相同，通常会从中随机选择一个 1。早期版本中，此逻辑主要由 `PrioritizeNodes()` 函数实现 1。
 
 ### 2.2 调度框架下的调度周期与绑定周期
 
@@ -75,7 +73,7 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 
 先前存在的 Extender 机制虽然提供了一种扩展方式，但其基于 HTTP 的远程调用带来了显著的性能瓶颈，且扩展点数量有限，例如，通常只能有一个 Extender 负责最终的绑定操作 4。
 
-因此，调度框架的核心目标是：***\**\*\*\*允许大部分调度特性以插\*\*件的形式实现，从而保持调度核心的简洁和可维护性\*\**\*** 5。
+因此，调度框架的核心目标是：**允许大部分调度特性以插件的形式实现，从而保持调度核心的简洁和可维护性** 5。
 
 调度框架作为 Alpha 特性在 Kubernetes 1.15 版本中首次引入 12。KEP-624 5 详细规划了其发展蓝图，目标是在 1.16 版本达到 Alpha，1.17 版本达到 Beta，并在 1.19 版本达到稳定状态 (GA)（实际的 Alpha 版本为 1.15，KEP 中的版本可能反映了最初的规划或后续调整）。
 
@@ -89,7 +87,11 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 
 ### 3.3 扩展点：构建调度逻辑的基石
 
-调度框架在调度周期和绑定周期的不同阶段定义了一系列扩展点 (Extension Points)，插件可以在这些点上注册并执行自定义逻辑。以下是主要的扩展点 5：
+调度框架在调度周期和绑定周期的不同阶段定义了一系列扩展点 (Extension Points)，插件可以在这些点上注册并执行自定义逻辑。
+
+![1](/Users/mengyipeng/Documents/blog/my-blog/public/posts/20250507/1.png)
+
+以下是主要的扩展点 5：
 
 | **扩展点 (Extension Point)** | **目的与描述**                                               | **关键接口方法 (示例)**                  | **调用时机/频率**                                      | **示例内置插件**                                             |
 | ---------------------------- | ------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
@@ -105,6 +107,10 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 | `PreBind`                    | 在实际执行绑定操作之前调用，允许插件执行一些最终的准备工作。 | `PreBind(pod, nodeName)`                 | `Permit` 成功后，`Bind` 前，每个绑定周期一次           | `VolumeBinding`                                              |
 | `Bind`                       | 执行实际的绑定操作，即将 Pod 的 `.spec.nodeName` 更新为选定的节点。通常在一个 Profile 中只有一个 `Bind` 插件处于激活状态。 | `Bind(pod, nodeName)`                    | `PreBind` 成功后，每个绑定周期一次                     | `DefaultBinder`                                              |
 | `PostBind`                   | 在 Pod 成功绑定到节点之后调用，用于执行一些清理工作或记录信息。 | `PostBind(pod, nodeName)`                | `Bind` 成功后，每个绑定周期一次                        | (通常用于自定义插件，如日志记录)                             |
+
+所有扩展点和执行顺序
+
+![2](2.png)
 
 ### 3.4 插件 API 与生命周期
 
@@ -131,35 +137,9 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 
 - **源码位置**：`pkg/scheduler/framework/plugins/noderesources/fit.go`
 
-- 逻辑简述
+- 逻辑简述：该插件实现了 `FilterPlugin` 接口。其核心的 `Filter`方法会遍历 Pod 中的所有容器，累加它们的资源请求总量，然后与 `nodeInfo.AllocatableResource()`（表示节点可分配资源）进行比较。如果节点的任何一种可分配资源小于 Pod 的请求量，则该节点不适合运行此 Pod，插件将返回一个表示失败的状态 
 
-  ：该插件实现了 
-
-  ```
-  FilterPlugin
-  ```
-
-   接口。其核心的 
-
-  ```
-  Filter
-  ```
-
-   方法会遍历 Pod 中的所有容器，累加它们的资源请求总量，然后与 
-
-  ```
-  nodeInfo.AllocatableResource()
-  ```
-
-  （表示节点可分配资源）进行比较。如果节点的任何一种可分配资源小于 Pod 的请求量，则该节点不适合运行此 Pod，插件将返回一个表示失败的状态 
-
-  20
-
-  。
-
-  Go
-
-  ```
+  ```go
   // Simplified conceptual logic for NodeResourcesFit.Filter
   func (f *Fit) Filter(ctx context.Context, cycleState *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
       // Calculate total requested resources by the pod
@@ -221,20 +201,15 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
   - **`Filter`**：评估 Pod 定义中 `requiredDuringSchedulingIgnoredDuringExecution` 类型的亲和性/反亲和性规则。如果硬性要求不满足，则过滤掉该节点。
   - **`Score`**：评估 `preferredDuringSchedulingIgnoredDuringExecution` 类型的规则。根据匹配的规则及其权重，为节点增加或减少分数。
 
-许多插件，如 `InterPodAffinity` 和 `TaintToleration`，会同时实现 `Filter` 和 `Score`（有时还包括 `PreFilter`/`PreScore`）扩展点。这种设计允许对同一特性（如污点或亲和性）应用不同层级的调度策略：通过 `Filter` 强制执行硬性约束，通过 `Score`表达软性偏好。例如，Pod 可能*必须*避免带有 `NoSchedule` 污点的节点（由 `Filter` 插件处理），同时****倾\*向于***避免带有 `PreferNoSchedule` 污点的节点（由 `Score` 插件处理）。这种分阶段评估为复杂的放置策略提供了细致的控制。
+许多插件，如 `InterPodAffinity` 和 `TaintToleration`，会同时实现 `Filter` 和 `Score`（有时还包括 `PreFilter`/`PreScore`）扩展点。这种设计允许对同一特性（如污点或亲和性）应用不同层级的调度策略：通过 `Filter` 强制执行硬性约束，通过 `Score`表达软性偏好。例如，Pod 可能*必须*避免带有 `NoSchedule` 污点的节点（由 `Filter` 插件处理），同时倾向避免带有 `PreferNoSchedule` 污点的节点（由 `Score` 插件处理）。这种分阶段评估为复杂的放置策略提供了细致的控制。
 
 `PreFilter` 和 `PreScore` 阶段对于优化调度性能至关重要。它们允许插件在每个 Pod 的调度周期开始时（`PreFilter`）或在对所有节点进行打分之前（`PreScore`）执行一次性的、可能较为耗时的计算，并将结果缓存在 `CycleState` 中。随后，针对每个节点调用的 `Filter` 或 `Score` 方法就可以直接使用这些预计算的结果，从而显著减少了在大型集群中因重复计算带来的开销。例如，`TaintToleration` 插件在 `PreScore` 阶段收集 Pod 对 `PreferNoSchedule` 污点的容忍信息，正是这种优化思想的体现 24。
 
 ### 4.4 `NodePorts` (PreFilter, Filter 插件)
 
 - **目的**：检查 Pod 请求的 `hostPort`（主机端口）在节点上是否可用。
-
 - **源码位置**：`pkg/scheduler/framework/plugins/nodeports/node_ports.go` （基于 19 的路径推断，26 提供了具体细节）
-
 - 逻辑简述
-
-  ：
-
   - **`PreFilter`**：可以从 Pod 定义中提取出所有请求的 `hostPort` 信息。
   - **`Filter`**：检查 `nodeInfo`（节点信息对象）中记录的已使用主机端口，判断 Pod 请求的端口是否存在冲突。如果存在冲突，则该节点不可用。`NodePorts` 插件的 `Filter` 函数会返回一个错误原因，如 "node(s) didn't have free ports for the requested pod ports" 26。
 
@@ -268,22 +243,14 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 抢占过程大致如下 29：
 
 1. **寻找牺牲节点 (Victim Node Selection)**：调度器（的抢占插件）会遍历集群中的节点，尝试找到一个或多个节点，在这些节点上，如果移除一些优先级低于 Pod P 的 Pod，就能使 Pod P 成功调度。
-
 2. **评估可行性**：对于每个潜在的牺牲节点，调度器会模拟驱逐低优先级 Pod 后的资源状况，判断 Pod P 是否能够满足其所有需求（包括资源、亲和性等）。
-
 3. 选择牺牲者 Pod (Victim Pod Selection)
-
-   ：
-
    - 被选为牺牲者的 Pod 的优先级必须低于抢占者 Pod P。
    - 调度器会优先选择优先级最低的 Pod 作为牺牲者。
    - 调度器会尝试尊重 PodDisruptionBudgets (PDBs)，即尽量不驱逐那些会导致其所属应用违反 PDB 的 Pod。然而，PDB 并非绝对的保护伞；如果为了调度一个非常高优先级的 Pod 而别无选择，PDB 也可能被打破 29。
    - 如果存在多个节点可以执行抢占，调度器通常会选择那个能够通过驱逐“代价最小”的一组 Pod（例如，优先级总和最低）来满足 Pod P 需求的节点。
-
 4. **设置提名节点 (Nominated Node)**：一旦选定了牺牲节点和牺牲者 Pod，抢占者 Pod P 的 `.status.nominatedNodeName` 字段会被设置为目标节点的名称 29。这个字段起到了一个重要的提示作用，告知调度器系统该节点正在为 Pod P 进行资源清理，应优先考虑将 Pod P 调度到此节点。
-
 5. **驱逐牺牲者 Pod**：调度器向 API Server 发送删除牺牲者 Pod 的请求。这些 Pod 会经历正常的优雅终止流程。
-
 6. **调度抢占者 Pod**：当牺牲者 Pod 被成功删除，节点资源得到释放后，抢占者 Pod P 会再次进入调度流程。由于其 `.status.nominatedNodeName` 已设置，调度器会优先尝试将其调度到该提名节点上。
 
 抢占机制虽然对于保障关键应用的运行至关重要，但它本质上是一种有损操作。`nominatedNodeName` 机制试图提高抢占的成功率和效率。因为从发出驱逐命令到资源真正释放需要一段时间（Pod 的优雅终止期），在这期间，如果没有 `nominatedNodeName` 的“软预留”，那么被释放的资源可能会被集群中其他碰巧正在调度的 Pod 抢先占用，导致最初的抢占者 Pod P 仍然无法调度到目标节点，形成“抢占踩踏”的现象。`nominatedNodeName` 通过向调度器传递一个强烈的信号，即“此节点正在为特定 Pod 清理资源”，从而降低了这种风险，但它并不保证最终一定能调度成功，因为节点状态可能在提名后再次发生变化。
@@ -316,7 +283,7 @@ Kubernetes 调度框架是现代 kube-scheduler 的基石，它通过一套定�
 
 kube-scheduler 内部的诸多设计，如可插拔的调度框架、抢占机制以及各种精细化的插件，并不仅仅是技术上的精巧实现，它们对生产环境中的 Kubernetes 集群运行具有深远且实际的影响。
 
-### 7.1 可插拔框架：定制化与可观测性的基石
+### 7.1 可插拔框架：定制化与可观测性
 
 调度框架的引入，使得 Kubernetes 能够适应远超以往的、多样化的工作负载需求。对于拥有特殊需求（如高性能计算 HPC、机器学习 ML 训练、电信网络功能虚拟化 NFV）的组织而言，它们不再需要fork Kubernetes 核心代码库来修改调度逻辑。取而代之的是，可以通过开发自定义插件来满足其独特需求。例如：
 
@@ -325,13 +292,13 @@ kube-scheduler 内部的诸多设计，如可插拔的调度框架、抢占机�
 
 此外，当 Pod 长时间处于 "Pending" 状态时，理解调度框架的各个阶段和当前激活的插件，对于排查问题至关重要。通过分析调度器日志，可以追溯 Pod 在哪个插件的哪个扩展点（Filter, Score, Permit 等）遇到了障碍。调度框架的模块化设计使得这种诊断过程更加清晰可循。SIG Scheduling 也在持续探索提升调度器可观测性和吞吐量的内部增强，例如 `QueueingHint` 机制 31，它很可能就是利用了框架的灵活性来优化调度信号的传递和处理。
 
-### 7.2 抢占机制：关键业务的守护神与潜在风险
+### 7.2 抢占机制：守护关键业务
 
 Pod 优先级与抢占机制是确保高优先级应用（如关键的在线服务、核心业务组件）在资源紧张时仍能获得所需资源的“最后一道防线”。这对于满足这些应用的服务等级目标 (SLO) 是不可或缺的。
 
 然而，抢占是一把双刃剑。它通过驱逐低优先级 Pod 来为高优先级 Pod 让路，这必然会对被驱逐的应用造成干扰。集群管理员必须深入理解 Pod 优先级类 (PriorityClasses) 和 PodDisruptionBudgets (PDBs) 的工作原理和相互作用，才能在高优先级任务的及时性与低优先级服务的稳定性之间做出合理的平衡和配置 29。错误或不当的优先级配置可能导致不必要的应用抖动，甚至引发级联性的服务中断。
 
-### 7.3 亲和性与拓扑分布：精细化布局的利器
+### 7.3 亲和性与拓扑分布：精细调度
 
 诸如 `InterPodAffinity`（Pod 间亲和性/反亲和性）和 `PodTopologySpread`（Pod 拓扑分布约束）等插件，为用户提供了强大的工具来精细控制 Pod 的部署位置，从而实现：
 

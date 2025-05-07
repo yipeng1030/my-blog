@@ -111,6 +111,24 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心 Kubernetes 的 kube-scheduler 是集群的中枢决策者，负责为每一个新创建的、未指定节点的 Pod 选择最合适的运行节点。这一决策过程对集群的效率、应用性能和整体可靠性至关重要 1。本文将深入 kube-scheduler 的内部机制，通过分析其 Go 语言源代码，揭示其从启动、核心调度逻辑到高度可扩展的调度框架的演进与实现。Kubernetes 的调度器经历了从相对单一的设计到高度可扩展的调度框架的演变，这是理解其当前强大能力的关键 3。
+调度器的设计直接影响着集群上运行的应用程序的可用性和资源利用率。如果 Pod 被放置在不合适的节点上，可能会导致某些节点资源紧张而另一些节点资源闲置，或者违反 Pod 间的亲和性与反亲和性规则，进而影响应用的通信效率或容错能力。因此，深入理解调度器的工作原理，有助于更好地配置和排查问题，最终提升集群的整体表现。早期版本的调度器逻辑相对固定，难以满足日益增长的定制化需求 4。虽然之后引入的 Extender 机制提供了一定的扩展能力，但在性能和灵活性上仍有局限 4。调度框架的出现，允许开发者通过插件将自定义逻辑直接注入调度流程，这不仅促进了相关生态系统的繁荣，也使得核心调度器能够保持精简和易维护，同时满足多样化的调度需求，例如针对机器学习、批处理作业或需要特定硬件的工作负载 5。
+一、 启动流程：Kube-Scheduler 的初始化与核心组件构建 理解 kube-scheduler 如何初始化自身及其主要数据结构，是深入其调度逻辑的前提。
+1.1 启动入口与命令解析 kube-scheduler 的启动入口位于 kubernetes/cmd/kube-scheduler/scheduler.go 文件中的 main 函数 7。它利用了 Cobra 框架来处理命令行参数和应用的配置启动。具体来说，main 函数会调用 kubernetes/cmd/kube-scheduler/app/server.go 文件中的 app.NewSchedulerCommand 函数来创建和初始化 Cobra 命令 7。
+随后，runCommand 函数被调用，它负责编排整个启动过程，包括创建调度器配置 (CompletedConfig) 和调度器实例 (scheduler.Scheduler)。这一过程的核心是调用 Setup 函数 7。Setup 函数会验证传入的选项，根据选项创建配置，并最终调用 scheduler.New 函数来实例化调度器 7。
+这种分层设计体现了良好的软件工程实践。cmd/kube-scheduler/scheduler.go 作为顶层入口非常轻量。cmd/kube-scheduler/app/server.go 负责解析命令行参数、管理配置选项，并协调 Setup 过程 7。而核心的调度器对象及其复杂的初始化逻辑则封装在 pkg/scheduler/scheduler.go 的 scheduler.New 函数中 7。这种模块化的结构使得各部分可以独立演进和测试，例如，修改命令行参数的处理逻辑，通常不会影响到核心调度算法的实现。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-05-07 11:22:12 +0800 CST'>May 7, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心" href="http://localhost:1313/my-blog/posts/20250507/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">K8s源代码分析：Kubelet
     </h2>
   </header>

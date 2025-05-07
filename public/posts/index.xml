@@ -6,8 +6,23 @@
     <description>Recent content in Posts on Yipeng M</description>
     <generator>Hugo -- 0.146.7</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 06 May 2025 11:22:12 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 07 May 2025 11:22:12 +0800</lastBuildDate>
     <atom:link href="http://localhost:1313/my-blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心</title>
+      <link>http://localhost:1313/my-blog/posts/20250507/</link>
+      <pubDate>Wed, 07 May 2025 11:22:12 +0800</pubDate>
+      <guid>http://localhost:1313/my-blog/posts/20250507/</guid>
+      <description>&lt;h1 id=&#34;kube-scheduler-深度解析从源码看-kubernetes-调度核心&#34;&gt;Kube-Scheduler 深度解析：从源码看 Kubernetes 调度核心&lt;/h1&gt;
+&lt;p&gt;Kubernetes 的 kube-scheduler 是集群的中枢决策者，负责为每一个新创建的、未指定节点的 Pod 选择最合适的运行节点。这一决策过程对集群的效率、应用性能和整体可靠性至关重要 1。本文将深入 kube-scheduler 的内部机制，通过分析其 Go 语言源代码，揭示其从启动、核心调度逻辑到高度可扩展的调度框架的演进与实现。Kubernetes 的调度器经历了从相对单一的设计到高度可扩展的调度框架的演变，这是理解其当前强大能力的关键 3。&lt;/p&gt;
+&lt;p&gt;调度器的设计直接影响着集群上运行的应用程序的可用性和资源利用率。如果 Pod 被放置在不合适的节点上，可能会导致某些节点资源紧张而另一些节点资源闲置，或者违反 Pod 间的亲和性与反亲和性规则，进而影响应用的通信效率或容错能力。因此，深入理解调度器的工作原理，有助于更好地配置和排查问题，最终提升集群的整体表现。早期版本的调度器逻辑相对固定，难以满足日益增长的定制化需求 4。虽然之后引入的 Extender 机制提供了一定的扩展能力，但在性能和灵活性上仍有局限 4。调度框架的出现，允许开发者通过插件将自定义逻辑直接注入调度流程，这不仅促进了相关生态系统的繁荣，也使得核心调度器能够保持精简和易维护，同时满足多样化的调度需求，例如针对机器学习、批处理作业或需要特定硬件的工作负载 5。&lt;/p&gt;
+&lt;h2 id=&#34;一-启动流程kube-scheduler-的初始化与核心组件构建&#34;&gt;一、 启动流程：Kube-Scheduler 的初始化与核心组件构建&lt;/h2&gt;
+&lt;p&gt;理解 kube-scheduler 如何初始化自身及其主要数据结构，是深入其调度逻辑的前提。&lt;/p&gt;
+&lt;h3 id=&#34;11-启动入口与命令解析&#34;&gt;1.1 启动入口与命令解析&lt;/h3&gt;
+&lt;p&gt;kube-scheduler 的启动入口位于 &lt;code&gt;kubernetes/cmd/kube-scheduler/scheduler.go&lt;/code&gt; 文件中的 &lt;code&gt;main&lt;/code&gt; 函数 7。它利用了 Cobra 框架来处理命令行参数和应用的配置启动。具体来说，&lt;code&gt;main&lt;/code&gt; 函数会调用 &lt;code&gt;kubernetes/cmd/kube-scheduler/app/server.go&lt;/code&gt; 文件中的 &lt;code&gt;app.NewSchedulerCommand&lt;/code&gt; 函数来创建和初始化 Cobra 命令 7。&lt;/p&gt;
+&lt;p&gt;随后，&lt;code&gt;runCommand&lt;/code&gt; 函数被调用，它负责编排整个启动过程，包括创建调度器配置 (&lt;code&gt;CompletedConfig&lt;/code&gt;) 和调度器实例 (&lt;code&gt;scheduler.Scheduler&lt;/code&gt;)。这一过程的核心是调用 &lt;code&gt;Setup&lt;/code&gt; 函数 7。&lt;code&gt;Setup&lt;/code&gt; 函数会验证传入的选项，根据选项创建配置，并最终调用 &lt;code&gt;scheduler.New&lt;/code&gt; 函数来实例化调度器 7。&lt;/p&gt;
+&lt;p&gt;这种分层设计体现了良好的软件工程实践。&lt;code&gt;cmd/kube-scheduler/scheduler.go&lt;/code&gt; 作为顶层入口非常轻量。&lt;code&gt;cmd/kube-scheduler/app/server.go&lt;/code&gt; 负责解析命令行参数、管理配置选项，并协调 &lt;code&gt;Setup&lt;/code&gt; 过程 7。而核心的调度器对象及其复杂的初始化逻辑则封装在 &lt;code&gt;pkg/scheduler/scheduler.go&lt;/code&gt; 的 &lt;code&gt;scheduler.New&lt;/code&gt; 函数中 7。这种模块化的结构使得各部分可以独立演进和测试，例如，修改命令行参数的处理逻辑，通常不会影响到核心调度算法的实现。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>K8s源代码分析：Kubelet</title>
       <link>http://localhost:1313/my-blog/posts/20250506/</link>
