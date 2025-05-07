@@ -2,3 +2,4 @@ baseURL = 'https://yipeng1030.github.io/my-blog/'
 languageCode = 'zh-cn'
 title = 'Yipeng M'
 theme = 'hugo-PaperMod'
+customCSS = ["css/custom.css"]

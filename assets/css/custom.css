@@ -1,0 +1,11 @@
+/* 调整主内容区最大宽度 */
+.post-single {
+    max-width: 90%;  /* 默认是 768px 或类似值 */
+    margin: auto;
+}
+
+.post-content {
+    max-width: 90%;  /* 默认是 768px 或类似值 */
+    margin: auto;
+}
+

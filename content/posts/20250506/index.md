@@ -2,7 +2,7 @@
 
 date = '2025-05-06T11:22:12+08:00'
 draft = false
-title = 'K8s源代码分析：Kubelet(1)-主循环'
+title = 'K8s源代码分析：Kubelet'
 
 +++
 
@@ -268,8 +268,6 @@ func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate)
      - **设计精髓**: `syncLoopIteration` 通过其 `select` 机制，将 Kubelet 的行为模式从被动响应（等待事件）转为主动协调（周期性检查和清理）。它巧妙地将来自不同来源、性质各异的事件统一到一个处理模型中，并通过回调 `handler` 的具体方法来执行实际工作。这种设计既保证了对各类变化的及时响应，也维持了代码结构的清晰和模块化，使得 Kubelet 能够持续地将节点状态驱动向用户定义的期望状态，同时处理好运行时的各种动态事件和必要的维护工作。
 
 5. 在 `HandlePodSyncs` 中，Kubelet 会将同步任务进一步分派给所谓的 "Pod Workers"。通常，Kubelet 会为每个活跃的 Pod（由其 UID 标识）维护一个专用的 **Pod Worker** (表现为一个后台 goroutine/协程)。这个 Worker 负责串行地处理与其关联的那个 Pod 的所有更新和生命周期事件（如创建、删除容器，配置网络，挂载卷，执行探针等）。这样做的好处是，对单个 Pod 的操作是顺序执行的，避免了复杂的并发控制，而不同 Pod 之间的操作则可以并行处理，提高了整体效率。`HandlePodSyncs` 的作用就是将待同步的 Pod 信息和操作类型传递给对应的 Pod Worker。
-
-   1. 
 
 
 ### 四、总结一下

@@ -10,7 +10,7 @@
 <meta name="description" content="Posts - Yipeng M">
 <meta name="author" content="">
 <link rel="canonical" href="http://localhost:1313/my-blog/posts/">
-<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/my-blog/assets/css/stylesheet.ce220725cb6f0bf77830c47ba31ebba6383d507f2fc2e29f6f156a6b9210628a.css" integrity="sha256-ziIHJctvC/d4MMR7ox67pjg9UH8vwuKfbxVqa5IQYoo=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/my-blog/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/my-blog/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/my-blog/favicon-32x32.png">
@@ -111,22 +111,22 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">K8s源代码分析：Kubelet(1)-主循环
+    <h2 class="entry-hint-parent">K8s源代码分析：Kubelet
     </h2>
   </header>
   <div class="entry-content">
-    <p>Kubelet 主工作流程源码深度剖析 Kubelet 是 Kubernetes 集群中每个节点上运行的核心组件，它负责管理 Pod 的生命周期、与容器运行时交互、上报节点和 Pod 状态等。本文将深入分析 Kubelet 的主工作流程，从启动函数 Run 开始，逐层解析其核心组件和循环机制。
-一、Kubelet 的启动入口：Kubelet.Run() 函数 Kubelet.Run() 函数是整个 Kubelet 服务的起点，负责完成一系列初始化工作并启动各个后台服务和主工作循环。
+    <p>Kubelet 源码解析 Kubelet 是 Kubernetes 集群中每个节点上运行的核心组件，它负责管理 Pod 的生命周期、与容器运行时交互、上报节点和 Pod 状态等。本文将深入分析 Kubelet 的主工作流程，从启动函数 Run 开始，逐层解析其核心组件和循环机制。
+一、Kubelet的整体架构 我们可以将 Kubelet 想象成一位勤勉的流水线工人，其核心职责便是持续不断地执行监控、任务分发与状态上报。
+参照示意图，Kubelet 的整个工作流程始于左上方一段有向弧线所代表的启动与初始化阶段，这里会完成所有必要的资源准备和环境设定，好比工人上岗前穿戴整齐、检查设备，为后续工作打下坚实基础。紧接着，流程便进入了名为 “SyncLoop” 的核心大循环，这是 Kubelet 的“大脑”和“双手”，负责处理所有实际的 Pod 管理任务。驱动这个主循环的是多种关键事件源，包括来自 API Server 的 Pod 指派和更新、本地静态 Pod 文件的变更、由 PLEG (Pod 生命周期事件发生器) 报告的节点上 Pod 和容器的实际状态变化，以及内部定时器触发的周期性同步、内务管理、健康探针结果和容器管理器事件更新——这些都像是工人源源不断接收到的生产指令、物料状态和设备反馈。当这些事件被触发并送达 SyncLoop 后，它会智能地根据事件的来源和类型，分派给相应的处理函数执行具体操作，如创建、更新或清理 Pod。与此同时，在 SyncLoop 右上角分布的六个并行且持续运行的辅助小循环，则构成了 Kubelet 与外界及其他组件沟通的桥梁，并负责维持关键的监听与上报机制；例如，PLEG 通过这些机制监控容器运行时事件，节点状态和心跳也借此与 API Server 保持同步和上报。因此，若 SyncLoop 在处理过程中对 Pod 状态进行了任何修改，这些变更便会通过这些辅助小循环及时上报给 API Server。
+接下来我们按初始化—小循环—大循环的顺序逐个分析。
+二、Kubelet 的启动与初始化：Kubelet.Run() Kubelet.Run() 函数是整个 Kubelet 服务的起点，负责完成一系列初始化工作并启动各个后台服务和主工作循环。
 func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) 它的主要启动步骤包括：
 日志服务初始化：
 设置 Kubelet 的 HTTP 日志服务，允许通过 API 访问节点上的日志文件。如果特定功能门控开启，还会支持更高级的日志查询功能。 API Server 客户端校验：
-通过检查 if kl.kubeClient == nil 判断是否配置了与 Kubernetes API Server 通信的客户端。如果没有配置，Kubelet 将无法向集群控制平面上报节点状态和 Pod 状态。 启动云资源同步管理器 (如果配置)：
-如果 Kubelet 配置了与特定云提供商集成的逻辑 (kl.cloudResourceSyncManager != nil)，则会启动一个后台 goroutine (协程) 来运行云资源同步管理器。 go kl.cloudResourceSyncManager.Run(wait.NeverStop) 该管理器负责同步节点与云平台相关的资源，如网络路由、负载均衡器等。 核心模块初始化：
-调用 kl.initializeModules() 初始化一系列不直接依赖容器运行时的内部模块。这些模块可能包括： 指标采集器 (Metrics Scraper) Kubelet 目录结构管理器 (Directory Manager) 证书管理器 (Certificate Manager) OOM 监视器 (OOM Watcher) 资源使用情况分析器 (Resource Analyzer) 这些模块的提前启动有助于 Kubelet 尽早准备好基础功能。 设计关键：任何一个核心模块初始化失败，都会导致 Kubelet 进程以错误码 1 退出 (os.Exit(1))，这表明了这些模块对于 Kubelet 正常运作的基础性和重要性。 Cgroup 版本检查：
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-05-06 11:22:12 +0800 CST'>May 6, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to K8s源代码分析：Kubelet(1)-主循环" href="http://localhost:1313/my-blog/posts/20250506/"></a>
+  <a class="entry-link" aria-label="post link to K8s源代码分析：Kubelet" href="http://localhost:1313/my-blog/posts/20250506/"></a>
 </article>
 
 <article class="post-entry"> 
